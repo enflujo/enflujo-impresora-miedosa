@@ -1,0 +1,40 @@
+html {
+  box-sizing: border-box;
+  height: 100%;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+::selection {
+  background-color: #30cac073;
+  color: #130808;
+}
+
+#contenedor {
+  display: flex;
+  height: 100%;
+}
+
+.col1-2 {
+  flex: 1;
+}
+
+#codigo {
+  width: 40vw;
+}
+
+#previsualizador,
+#lienzoImg {
+  width: 400px;
+  height: 400px;
+}
