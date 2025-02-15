@@ -71,7 +71,7 @@ function procesarTrayectos(trayectos) {
 }
 
 // Cargar, procesar y guardar el G-code
-const nombreArchivo = 'I_airplane_40_0001';
+const nombreArchivo = 'I_zebra_40_0001';
 const extension = '.ngc';
 const base = './estaticos/gcodes/';
 const archivoInicial = `${base}${nombreArchivo}${extension}`;

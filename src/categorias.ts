@@ -87,6 +87,8 @@ export const categorias = [
   'toaster',
 ].sort();
 
+export const otrasCategorias = ['turtle', 'egg'];
+
 export function cargarImagenes(
   categoria: string,
   numeroImgsUnsplash: number = 5,
