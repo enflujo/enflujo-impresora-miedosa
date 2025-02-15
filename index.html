@@ -9,15 +9,15 @@
     <link rel="manifest" href="/sitio.webmanifest" />
     <!-- <link rel="canonical" href="https://enflujo.com" /> -->
 
-    <title>..:: EnFlujo ::..</title>
+    <title>..:: Ground Truth - EnFlujo ::..</title>
     <!-- <meta name="description" content="Descripción del sitio...." /> -->
 
     <!-- OpenGraph -->
     <meta property="og:locale" content="es_CO" />
-    <!-- <meta property="og:site_name" content="EnFlujo" /> -->
+    <meta property="og:site_name" content="Ground Truth" />
     <meta property="og:type" content="website" />
     <!-- <meta property="og:url" content="https://enflujo.com" /> -->
-    <!-- <meta property="og:title" content="Titulo ..." /> -->
+    <meta property="og:title" content="Ground Truth" />
     <!-- <meta property="og:description" content="Descripción ..." /> -->
     <!-- <meta property="og:image" content="https://xxxxxx.jpg" /> -->
     <!-- <meta property="og:image:alt" content="Texto que describe la imagen" /> -->
@@ -35,20 +35,30 @@
     <!-- <meta name="twitter:image:alt" content="Texto que describe la imagen" /> -->
   </head>
   <body>
-    <h1>
-      Una impresora miedosita, temblorosa para dibujar, un poco como su dueño pero con sus propias formas accidentadas
-      de crear dibujos
-    </h1>
-    <input type="file" id="entradaImg" />
+    <header>
+      <h1>GROUND TRUTH</h1>
+      <h2>ANIMATED INVESTIGATION</h2>
+      <h3>AIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAIAI</h3>
+    </header>
+
+    <aside id="categorias">
+      <h4>Categories</h4>
+      <p>Based on the COCO dataset</p>
+      <ul id="listaCategorias"></ul>
+    </aside>
+
+    <canvas id="previsualizador"></canvas>
+
+    <!-- <input type="file" id="entradaImg" />
 
     <div id="contenedor">
       <div class="col1-2">
         <canvas id="lienzoImg"></canvas>
         <canvas id="lienzo"></canvas>
-        <canvas id="previsualizador"></canvas>
+        
       </div>
       <pre id="codigo"></pre>
-    </div>
+    </div> -->
 
     <script type="module" src="/src/programa.ts"></script>
   </body>

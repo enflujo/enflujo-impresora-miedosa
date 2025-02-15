@@ -15,9 +15,70 @@ body {
   padding: 0;
 }
 
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  color: red;
+}
+
 ::selection {
-  background-color: #30cac073;
+  background-color: red;
   color: #130808;
+}
+
+h1 {
+  border-bottom: 3px solid;
+  display: inline-block;
+  font-size: 2.5em;
+  margin-bottom: 0;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.54em;
+}
+
+h3 {
+  font-size: 0.715em;
+  font-weight: normal;
+  border-bottom: 2px solid;
+  display: inline-block;
+  margin: 0;
+}
+
+h4 {
+  border-bottom: 2px solid;
+  padding-bottom: 0.3em;
+}
+
+#categorias {
+  position: fixed;
+  overflow: auto;
+  width: 30vw;
+  height: 100vh;
+  top: 0;
+  right: 0;
+  padding: 1em;
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  p,
+  li {
+    font-size: 0.75em;
+  }
+
+  .categoria {
+    display: inline-block;
+    padding: 0.5em;
+    cursor: pointer;
+    margin-left: -0.5em;
+    border: 2px solid transparent;
+    &.seleccionado {
+      border: 2px solid;
+    }
+  }
 }
 
 #contenedor {
