@@ -1,10 +1,15 @@
 import * as fs from 'fs';
 
 const UMBRAL = 0.3; // Umbral mínimo de movimiento en mm
+const nombreArchivo = 'I_bowl_40';
+const extension = '.ngc';
+const base = './estaticos/gcodes/';
+const archivoInicial = `${base}${nombreArchivo}${extension}`;
+const archivoFinal = `${base}${nombreArchivo}_O${extension}`;
 
 // Expresión regular para detectar movimientos
-const MOVIMIENTOS_XY = /G0[0123] X([-0-9.]+) Y([-0-9.]+)(?: Z([-0-9.]+))?(?: I([-0-9.]+) J([-0-9.]+))?/;
-const MOVIMIENTO_Z = /^G0[01] Z([-0-9.]+)/;
+const MOVIMIENTOS_XY = /G0?[0123]X([-0-9.]+)Y([-0-9.]+)(?:Z([-0-9.]+))?(?:I([-0-9.]+)J([-0-9.]+))?/;
+const MOVIMIENTO_Z = /^G0?[01]Z([-0-9.]+)/;
 const COMENTARIOS = /\(.*?\)/g; // Elimina comentarios dentro de paréntesis
 
 function procesarTrayectos(trayectos) {
@@ -22,60 +27,89 @@ function procesarTrayectos(trayectos) {
     linea = linea.replace(COMENTARIOS, '').trim();
     if (!linea) continue; // Si la línea quedó vacía tras quitar el comentario, omitirla
 
-    const matchXY = linea.match(MOVIMIENTOS_XY);
-    const matchZ = linea.match(MOVIMIENTO_Z);
+    const lineaSinEspacios = linea.replaceAll(' ', '');
+    const matchXY = lineaSinEspacios.match(MOVIMIENTOS_XY);
 
-    if (matchXY) {
+    if (!matchXY) {
+      // console.warn(`Línea no reconocida: ${linea}`);
+
+      if (lineaSinEspacios.includes('Z')) {
+        console.warn(`Eliminando movimiento Z: ${linea}`);
+        continue;
+      }
+    } else {
       const x = matchXY[1] ? parseFloat(matchXY[1]) : ultimoX;
       const y = matchXY[2] ? parseFloat(matchXY[2]) : ultimoY;
-      const z = matchXY[3] ? parseFloat(matchXY[3]) : null;
-      const iVal = matchXY[4] ? parseFloat(matchXY[4]) : null;
-      const jVal = matchXY[5] ? parseFloat(matchXY[5]) : null;
 
-      // ❌ Eliminar arcos con movimiento en Z
-      if ((iVal !== null || jVal !== null) && z !== null) {
-        console.warn(`Eliminando arco inválido: ${linea}`);
-        continue;
-      }
-
-      // ✅ Validar arcos bien definidos
-      if ((iVal !== null && isNaN(iVal)) || (jVal !== null && isNaN(jVal))) {
-        console.warn(`Eliminando arco malformado: ${linea}`);
-        continue;
-      }
-
-      // Filtrar movimientos XY pequeños
       if (ultimoX !== null && ultimoY !== null && x !== null && y !== null) {
         const distancia = Math.hypot(x - ultimoX, y - ultimoY);
-        if (distancia < UMBRAL && iVal === null && jVal === null) {
+        console.log(`Distancia: ${distancia}, Umbral: ${UMBRAL}, Línea: ${linea}`);
+
+        if (distancia < UMBRAL) {
+          console.warn(`Eliminando línea: ${linea}`);
           continue;
         }
       }
 
       ultimoX = x;
       ultimoY = y;
-      hayMovimientoXY = true;
-    } else if (matchZ) {
-      // Si hay un movimiento en Z pero no ha habido movimientos XY antes, lo descartamos
-      if (!hayMovimientoXY) {
-        console.warn(`Eliminando movimiento Z aislado: ${linea}`);
-        continue;
-      }
-      hayMovimientoXY = false; // Reiniciar flag de movimiento XY después de un Z
     }
+    // const matchZ = lineaSinEspacios.match(MOVIMIENTO_Z);
+
+    // if (matchXY) {
+    //   const x = matchXY[1] ? parseFloat(matchXY[1]) : ultimoX;
+    //   const y = matchXY[2] ? parseFloat(matchXY[2]) : ultimoY;
+    //   const z = matchXY[3] ? parseFloat(matchXY[3]) : null;
+    //   const iVal = matchXY[4] ? parseFloat(matchXY[4]) : null;
+    //   const jVal = matchXY[5] ? parseFloat(matchXY[5]) : null;
+
+    //   // ❌ Eliminar arcos con movimiento en Z
+    //   if ((iVal !== null || jVal !== null) && z !== null) {
+    //     // console.warn(`Eliminando arco inválido: ${linea}`);
+    //     // continue;
+    //   }
+
+    //   // ✅ Validar arcos bien definidos
+    //   if ((iVal !== null && isNaN(iVal)) || (jVal !== null && isNaN(jVal))) {
+    //     console.warn(`Eliminando arco malformado: ${linea}`);
+    //     continue;
+    //   }
+
+    //   // // Filtrar movimientos XY pequeños
+    //   // if (ultimoX !== null && ultimoY !== null && x !== null && y !== null) {
+    //   //   const distancia = Math.hypot(x - ultimoX, y - ultimoY);
+    //   //   if (distancia < UMBRAL && iVal === null && jVal === null) {
+    //   //     continue;
+    //   //   }
+    //   // }
+
+    //   if (ultimoX !== null && ultimoY !== null && x !== null && y !== null) {
+    //     const distancia = Math.hypot(x - ultimoX, y - ultimoY);
+    //     console.log(`Distancia: ${distancia}, Umbral: ${UMBRAL}, Línea: ${linea}`);
+
+    //     if (distancia < UMBRAL && iVal === null && jVal === null) {
+    //       console.warn(`Eliminando línea: ${linea}`);
+    //       continue;
+    //     }
+    //   }
+
+    //   ultimoX = x;
+    //   ultimoY = y;
+    //   hayMovimientoXY = true;
+    // } else if (matchZ) {
+    //   // Si hay un movimiento en Z pero no ha habido movimientos XY antes, lo descartamos
+    //   if (!hayMovimientoXY) {
+    //     console.warn(`Eliminando movimiento Z aislado: ${linea}`);
+    //     continue;
+    //   }
+    //   hayMovimientoXY = false; // Reiniciar flag de movimiento XY después de un Z
+    // }
 
     resultado.push(linea);
   }
 
   return resultado.join('\n');
 }
-
-// Cargar, procesar y guardar el G-code
-const nombreArchivo = 'I_zebra_40_0001';
-const extension = '.ngc';
-const base = './estaticos/gcodes/';
-const archivoInicial = `${base}${nombreArchivo}${extension}`;
-const archivoFinal = `${base}${nombreArchivo}_O${extension}`;
 
 fs.readFile(archivoInicial, 'utf8', (err, datos) => {
   if (err) {
