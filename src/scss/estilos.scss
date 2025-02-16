@@ -50,6 +50,10 @@ h4 {
   padding-bottom: 0.3em;
 }
 
+p {
+  color: black;
+}
+
 #categorias {
   position: fixed;
   overflow: auto;
@@ -69,14 +73,24 @@ h4 {
     font-size: 0.75em;
   }
 
+  ul {
+    margin-left: -0.5em;
+  }
+
   .categoria {
     display: inline-block;
     padding: 0.5em;
     cursor: pointer;
-    margin-left: -0.5em;
+
     border: 2px solid transparent;
+    color: #3487d0;
+
     &.seleccionado {
       border: 2px solid;
+    }
+
+    &:hover {
+      border: 2px dotted;
     }
   }
 }
@@ -98,4 +112,15 @@ h4 {
 #lienzoImg {
   width: 400px;
   height: 400px;
+}
+
+#imagenesGenericas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  overflow: auto;
+  padding: 1em;
+  width: 50vw;
 }
