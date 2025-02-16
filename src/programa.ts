@@ -1,4 +1,5 @@
 // import { cargarImagenes, categorias } from './categorias';
+import { categorias } from './categorias';
 import { buscarImagen } from './componentes/BuscarImagenes';
 import { crearMenuCategorias } from './componentes/MenuCategorias';
 import VisorTrayectos from './componentes/VisorTrayectos';
@@ -39,4 +40,7 @@ async function cargarCodigo(nombre: string, proporcion: number = 40, mostrarTitu
   }
 }
 
-// cargarCodigo('I_Cow_40_0001_O.ngc', 40, true);
+const categoria = categorias[Math.floor(Math.random() * categorias.length)];
+cargarCategoria(categoria);
+
+// cargarCodigo('T_ground_truth_40.ngc', 40, false);
