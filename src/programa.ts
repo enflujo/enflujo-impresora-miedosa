@@ -6,7 +6,7 @@ import VisorTrayectos from './componentes/VisorTrayectos';
 import './scss/estilos.scss';
 
 const previsualizador = new VisorTrayectos(document.getElementById('previsualizador') as HTMLCanvasElement);
-let buscarImgs = true;
+let buscarImgs = false;
 crearMenuCategorias(cargarCategoria);
 
 function cargarCategoria(nombre: string) {
@@ -41,6 +41,8 @@ async function cargarCodigo(nombre: string, proporcion: number = 40, mostrarTitu
 }
 
 const categoria = categorias[Math.floor(Math.random() * categorias.length)];
+const elemento = document.querySelector(`[data-categoria="${categoria}"]`) as HTMLLIElement;
+elemento.click();
 cargarCategoria(categoria);
 
 // cargarCodigo('T_ground_truth_40.ngc', 40, false);

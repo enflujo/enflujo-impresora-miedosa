@@ -17,6 +17,7 @@ export function crearMenuCategorias(cargarcategoria: (nombre: string) => void) {
 
     contenedor.appendChild(elemento);
     elemento.classList.add('categoria');
+    elemento.dataset.categoria = categoria;
 
     elemento.addEventListener('click', () => {
       cargarcategoria(categoria);
