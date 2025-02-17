@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 
 const UMBRAL = 0.3; // Umbral mínimo de movimiento en mm
-const nombreArchivo = 'I_bowl_40';
+const nombreArchivo = 'I_wine glass_40';
 const extension = '.ngc';
 const base = './estaticos/gcodes/';
-const archivoInicial = `${base}${nombreArchivo}${extension}`;
+const archivoInicial = `${base}originales/${nombreArchivo}${extension}`;
 const archivoFinal = `${base}${nombreArchivo}_O${extension}`;
 
 // Expresión regular para detectar movimientos
