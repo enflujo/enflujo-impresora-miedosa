@@ -28,3 +28,6 @@ dist-ssr
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+src/secretos.ts
+!src/secretos.ts.ejemplo
