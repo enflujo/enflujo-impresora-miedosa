@@ -152,7 +152,18 @@ let puerto: SerialPort | null = null;
 let emisor: WritableStreamDefaultWriter<string> | null = null;
 const eventos: { [nombre: string]: ((datos: string | null) => void)[] } = {};
 
-function puertoAbierto() {
+export function obtenerPuerto() {
+  return puerto;
+}
+
+export function eleminiarPuerto() {
+  if (puerto) {
+    puerto.close();
+  }
+  puerto = null;
+}
+
+export function puertoAbierto() {
   return puerto && puerto.readable && puerto.writable;
 }
 
@@ -204,7 +215,6 @@ async function bucle(lector: ReadableStreamDefaultReader<string>) {
         // Ignore bad reads
       }
       if (json) {
-        // If it's an array, handle accordingly
         if (typeof json === 'object') {
           if (json[0] === '_w') {
             console.warn('[ARDUINO] ' + json[1]);
@@ -245,7 +255,7 @@ async function bucle(lector: ReadableStreamDefaultReader<string>) {
   }
 }
 
-function emitir(nombre: string, data: string | null) {
+export function emitir(nombre: string, data: string | null) {
   if (!eventos[nombre]) {
     return console.warn('Evento ' + nombre + ' recibido pero no se ha registrado en los eventos.');
   }

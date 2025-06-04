@@ -1,6 +1,7 @@
 // import { cargarImagenes, categorias } from './categorias';
 import { categorias } from './categorias';
 import { buscarImagen } from './componentes/BuscarImagenes';
+import { conectarDispositivo, eleminiarPuerto, obtenerPuerto, puertoAbierto } from './componentes/Impresora';
 import { crearMenuCategorias } from './componentes/MenuCategorias';
 import VisorTrayectos from './componentes/VisorTrayectos';
 import './scss/estilos.scss';
@@ -46,3 +47,25 @@ elemento.click();
 cargarCategoria(categoria);
 
 // cargarCodigo('T_ground_truth_40.ngc', 40, false);
+
+const conectar = document.getElementById('conectar') as HTMLDivElement;
+
+conectar.addEventListener('click', async () => {
+  const puerto = obtenerPuerto();
+  console.log(puertoAbierto());
+
+  try {
+    if (puertoAbierto()) {
+      console.log('Desconectando...');
+      await puerto?.close();
+      eleminiarPuerto();
+      conectar.textContent = 'Conectar';
+    } else {
+      console.log('Conectando...');
+      await conectarDispositivo();
+      conectar.textContent = 'Desconectar';
+    }
+  } catch (error) {
+    console.error('Error al conectar:', error);
+  }
+});
