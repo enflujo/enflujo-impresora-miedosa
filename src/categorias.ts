@@ -87,7 +87,7 @@ export const categorias = [
   'toaster',
 ].sort();
 
-export const otrasCategorias = ['turtle', 'egg', 'house', 'smell', 'tree', 'nila'].sort();
+export const otrasCategorias = ['turtle', 'egg', 'house', 'smell', 'tree', 'nila', 'algo'].sort();
 
 export function cargarImagenes(
   categoria: string,

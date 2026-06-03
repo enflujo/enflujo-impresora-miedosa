@@ -4,12 +4,17 @@
   - Invertí los motores, en mi caso el X está en el 1 y el Y en el 2.
 
   Diccionario de comandos:
-  G1: Mover. Ejemplo: G1 X10, G1 X10 Y10, etc...
-  G4: Esperar. Ejemplo: G4 P300 espera 150ms.
-  M300 S30: Baja el eje Z.
-  M300 S50: Sube el eje Z.
+  G0/G1: Mover. Ejemplo: G1 X10, G1 X10 Y10, etc...
+  G2/G3: Arcos tratados como línea hasta el punto final.
+  G4: Esperar. Ejemplo: G4 P300 espera 300ms.
+  G20/G21: Pulgadas/mm. G20 solo se ignora con aviso; la maquina trabaja en mm.
+  G90/G91: Posicion absoluta/relativa.
+  G92: Define la posicion actual sin mover motores.
+  U o M300 S50: Sube el eje Z.
+  D o M300 S30: Baja el eje Z.
   M2: Libera los motores y fin del programa.
-  M5 o M18: Libera los motores.
+  M3: Sin accion.
+  M5/M18: Libera los motores.
   M114: Reporta la posición actual.
 */
 
@@ -55,12 +60,15 @@ float Zmax = 1.0;
 float Xpos = Xmin;
 float Ypos = Ymin;
 float Zpos = Zmax;
+bool modoRelativo = false;
 
 void setup() {
   Serial.begin(9600);
 
   motorZ.attach(pinServo);
   motorZ.write(zArriba);
+  pinMode(15, OUTPUT);
+  pinMode(16, OUTPUT);
   delay(100);
 
   // Si se calientan mucho los motores se puede bajar la velocidad
@@ -144,9 +152,73 @@ void actualizarPosicion(char* linea) {
   if (s) posicionActual.s = atof(s + 1);
 }
 
+int leerCodigo(char* linea, int& indice, int cantidadCaracteres) {
+  char buffer[8];
+  int i = 0;
+
+  while (indice < cantidadCaracteres && isdigit(linea[indice]) && i < 7) {
+    buffer[i++] = linea[indice++];
+  }
+
+  buffer[i] = '\0';
+  if (i == 0) return -1;
+  return atoi(buffer);
+}
+
+bool tieneParametro(char* linea, char parametro) {
+  return strchr(linea, parametro) != NULL;
+}
+
+float leerParametro(char* linea, char parametro, float valorPorDefecto) {
+  char* posicion = strchr(linea, parametro);
+  if (!posicion) return valorPorDefecto;
+  return atof(posicion + 1);
+}
+
+void reportarPosicion() {
+  Serial.print("Posición actual: X = ");
+  Serial.print(Xpos);
+  Serial.print("  -  Y = ");
+  Serial.print(Ypos);
+  Serial.print("  -  Z = ");
+  Serial.println(Zpos);
+}
+
+void liberarMotores(const char* codigo) {
+  motorX.release();
+  motorY.release();
+  Serial.print("Motores liberados (");
+  Serial.print(codigo);
+  Serial.println(")");
+}
+
+void moverDesdeGcode(char* linea, bool esArco) {
+  bool tieneX = tieneParametro(linea, 'X');
+  bool tieneY = tieneParametro(linea, 'Y');
+
+  if (!tieneX && !tieneY) {
+    Serial.println("Movimiento sin X/Y; no se mueven motores.");
+    actualizarPosicion(linea);
+    return;
+  }
+
+  float destinoX = tieneX ? leerParametro(linea, 'X', Xpos) : Xpos;
+  float destinoY = tieneY ? leerParametro(linea, 'Y', Ypos) : Ypos;
+
+  if (modoRelativo) {
+    if (tieneX) destinoX = Xpos + destinoX;
+    if (tieneY) destinoY = Ypos + destinoY;
+  }
+
+  Serial.println(esArco ? "Arco tratado como línea" : "Movimiento lineal");
+  dibujarLinea(destinoX, destinoY);
+  if (tieneParametro(linea, 'Z')) posicionActual.z = leerParametro(linea, 'Z', posicionActual.z);
+  if (tieneParametro(linea, 'P')) posicionActual.p = leerParametro(linea, 'P', posicionActual.p);
+  if (tieneParametro(linea, 'S')) posicionActual.s = leerParametro(linea, 'S', posicionActual.s);
+}
+
 void procesarLinea(char* linea, int cantidadCaracteres) {
   int indice = 0;
-  char buffer[64];
 
   while (indice < cantidadCaracteres) {
     switch (linea[indice++]) {
@@ -156,17 +228,8 @@ void procesarLinea(char* linea, int cantidadCaracteres) {
       case 'D':
         bajar();
         break;
-      case 'G':
-        // Leer hasta dos caracteres para capturar códigos como G01, G02, G03
-        buffer[0] = linea[indice++];
-        if (isdigit(linea[indice])) {
-          buffer[1] = linea[indice++];
-          buffer[2] = '\0';
-        } else {
-          buffer[1] = '\0';
-        }
-
-        int codigoG = atoi(buffer);
+      case 'G': {
+        int codigoG = leerCodigo(linea, indice, cantidadCaracteres);
 
         Serial.print("Código G leído: G");
         Serial.println(codigoG);
@@ -174,16 +237,47 @@ void procesarLinea(char* linea, int cantidadCaracteres) {
         switch (codigoG) {
           case 0:  // G0 o G00 - Movimiento rápido
           case 1:  // G1 o G01 - Movimiento lineal
-            Serial.println("Movimiento lineal (G0/G1)");
-            actualizarPosicion(linea);
-            dibujarLinea(posicionActual.x, posicionActual.y);
+            moverDesdeGcode(linea, false);
             break;
 
           case 2:  // G2 o G02 - Arco horario (tratado como línea)
           case 3:  // G3 o G03 - Arco antihorario (igual)
-            Serial.println("Arco (G2/G3) tratado como lineal");
-            actualizarPosicion(linea);
-            dibujarLinea(posicionActual.x, posicionActual.y);
+            moverDesdeGcode(linea, true);
+            break;
+
+          case 4:  // G4 - Esperar
+            posicionActual.p = leerParametro(linea, 'P', 0);
+            Serial.print("Esperando ");
+            Serial.print(posicionActual.p);
+            Serial.println(" ms");
+            delay((unsigned long) posicionActual.p);
+            break;
+
+          case 20:  // G20 - Pulgadas
+            Serial.println("G20 recibido; se ignora porque la maquina trabaja en mm.");
+            break;
+
+          case 21:  // G21 - Milimetros
+            Serial.println("Unidades en milimetros (G21)");
+            break;
+
+          case 90:  // G90 - Posicion absoluta
+            modoRelativo = false;
+            Serial.println("Modo absoluto (G90)");
+            break;
+
+          case 91:  // G91 - Posicion relativa
+            modoRelativo = true;
+            Serial.println("Modo relativo (G91)");
+            break;
+
+          case 92:  // G92 - Definir posicion actual
+            if (tieneParametro(linea, 'X')) Xpos = leerParametro(linea, 'X', Xpos);
+            if (tieneParametro(linea, 'Y')) Ypos = leerParametro(linea, 'Y', Ypos);
+            posicionActual.x = Xpos;
+            posicionActual.y = Ypos;
+            Serial.println("Posición actual redefinida (G92)");
+            reportarPosicion();
             break;
 
           default:
@@ -192,17 +286,14 @@ void procesarLinea(char* linea, int cantidadCaracteres) {
             break;
         }
         break;
+      }
 
-      case 'M':
-        buffer[0] = linea[indice++];  // /!\ Aproximado – solo funciona con comandos de 3 dígitos
-        buffer[1] = linea[indice++];
-        buffer[2] = linea[indice++];
-        buffer[3] = '\0';
+      case 'M': {
+        int codigoM = leerCodigo(linea, indice, cantidadCaracteres);
 
-        switch (atoi(buffer)) {
+        switch (codigoM) {
           case 300: {
-              char* posicionS = strchr(linea + indice, 'S');
-              float valorS = atof(posicionS + 1);
+              float valorS = leerParametro(linea, 'S', -1);
               if (valorS == 30) {
                 bajar();
               }
@@ -213,16 +304,11 @@ void procesarLinea(char* linea, int cantidadCaracteres) {
             }
 
           case 114:  // M114 - Reportar posición actual
-            Serial.print("Posición actual: X = ");
-            Serial.print(posicionActual.x);
-            Serial.print("  -  Y = ");
-            Serial.println(posicionActual.y);
+            reportarPosicion();
             break;
 
           case 2:  // M2 - Fin del programa (liberar motores)
-            motorX.release();
-            motorY.release();
-            Serial.println("Motores liberados (M2)");
+            liberarMotores("M2");
             Serial.println("..:: FIN ::..");
             break;
 
@@ -232,17 +318,15 @@ void procesarLinea(char* linea, int cantidadCaracteres) {
 
           case 5:  // M5 - Detener motores
           case 18: // M18 - También detener motores
-            motorX.release();
-            motorY.release();
-            Serial.print("Motores liberados (M");
-            Serial.print(buffer);
-            Serial.println(")");
+            liberarMotores(codigoM == 5 ? "M5" : "M18");
             break;
 
           default:
             Serial.print("Comando M no reconocido: M");
-            Serial.println(buffer);
+            Serial.println(codigoM);
         }
+        break;
+      }
     }
   }
 }

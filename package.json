@@ -1,6 +1,6 @@
 {
   "name": "enflujo-impresora-miedosa",
-  "packageManager": "yarn@4.9.1",
+  "packageManager": "yarn@4.16.0",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -13,16 +13,16 @@
   },
   "devDependencies": {
     "@types/w3c-web-serial": "^1.0.8",
-    "autoprefixer": "^10.4.21",
-    "cssnano": "^7.0.7",
-    "postcss": "^8.5.3",
-    "prettier": "^3.5.3",
-    "sass": "^1.89.0",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "autoprefixer": "^10.5.0",
+    "cssnano": "^8.0.1",
+    "postcss": "^8.5.15",
+    "prettier": "^3.8.3",
+    "sass": "^1.100.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
   },
   "dependencies": {
     "pexels": "^1.4.0",
-    "unsplash-js": "^7.0.19"
+    "unsplash-js": "^8.0.0"
   }
 }
